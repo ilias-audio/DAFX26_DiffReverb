@@ -134,8 +134,8 @@ git -C flamo diff upstream/main..HEAD
 
 Ilias Ibnyahya and Joshua D. Reiss. "Gradient Descent Optimization of Room
 Impulse Responses with Parameter-Efficient Differentiable Feedback Delay
-Networks". Proceedings of the International Conference on Digital Audio Effects
-(DAFx), 2026.
+Networks". Proceedings of the 29th International Conference on Digital Audio Effects
+(DAFx26), Cambridge, MA, USA, 1–4 September 2026.
 
 ## License
 
