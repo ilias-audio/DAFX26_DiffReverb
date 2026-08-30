@@ -1,0 +1,3 @@
+[submodule "flamo"]
+	path = flamo
+	url = https://github.com/ilias-audio/flamo.git

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Differentiable FDN for RIR Matching, Audio Examples (DAFx 2026)</title>
+<meta name="description" content="Audio examples for a parameter-efficient differentiable Feedback Delay Network fitted to measured room impulse responses by gradient descent. DAFx 2026." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;750&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">DAFx 2026 Companion Audio Examples</div>
+    <h1 class="title">Gradient Descent Optimization of Room Impulse Responses with Parameter-Efficient Differentiable Feedback Delay Networks</h1>
+    <div class="authors"><b>Ilias Ibnyahya</b> and <b>Joshua D. Reiss</b>, Centre for Digital Music, Queen Mary University of London</div>
+    <div class="badges">
+      <a class="badge" href="#examples">Listen to the examples</a>
+      <a class="badge" href="#method">How it works</a>
+      <a class="badge" href="https://github.com/ilias-audio/DAFX26_DiffReverb">Code and RIRs</a>
+    </div>
+  </div>
+</header>
+
+<!-- ===================== OVERVIEW / SHORT PAPER ===================== -->
+<section id="method">
+  <div class="wrap">
+    <h2>Summary</h2>
+    <p class="lead">There are two common ways to add reverb. Convolving with a measured room impulse response (RIR) sounds exact, but it is heavy and fixed. A feedback delay network (FDN) is light and adjustable, but hard to match to a real room. We get both: we fit a fully differentiable FDN to a measured RIR by gradient descent.</p>
+
+    <figure class="figure arch">
+      <img src="assets/architecture.png" alt="Block diagram of the two-branch differentiable FDN" />
+      <figcaption class="figcap"><b>Architecture.</b> Branch&nbsp;A is the late reverb: input gains <b>b</b>, the FDN loop (feedback matrix <b>A</b>, delays z<sup>-m</sup>, PEQ attenuation &Gamma;(z)), output gains <b>c</b>, and a tone filter <i>T(z)</i>. Branch&nbsp;B is the direct path and early reflections. The two branches are summed and passed through a trainable bandpass. Blue marks filters that can be PEQ or GEQ; orange marks parameters that can be trained or fixed.</figcaption>
+    </figure>
+
+    <div class="narrative">
+      <p>The FDN has <strong>16 delay lines at 48&nbsp;kHz</strong>. Everything is trained at once: the <span class="k">delay lengths</span>, the <span class="k">feedback matrix</span>, the <span class="k">early-reflection taps</span>, and the <span class="k">filters</span> that shape how each frequency decays.</p>
+      <p>One set of parametric-EQ (PEQ) bands is shared by all delay lines, and each line's gain follows from Jot's proportionality rule. For the same number of parameters this beats graphic-EQ filters on reverberation-time (<span class="k">T&#8323;&#8320;</span>) error, while using <strong>2.8&times; fewer multiplies</strong> per sample and training several times faster.</p>
+      <p>The loss is built around an <strong>Energy Decay Relief (EDR)</strong> term, with extra terms for <span class="k">T&#8323;&#8320;</span>, direct-to-reverberant ratio, early energy, and echo density. The result runs at about the per-sample cost of partitioned convolution while using roughly <strong>11&times; less memory</strong>.</p>
+      <p><strong>Built for gradient-based training.</strong> The whole model is differentiable, so it drops into any PyTorch / autograd pipeline as a trainable layer. Each optimization step is a single <strong>forward-and-backward pass</strong> over the (impulse, target) pair at 48&nbsp;kHz: about <strong>0.2&nbsp;s</strong> for a typical room and <strong>0.3&nbsp;s</strong> averaged over the nine rooms on one consumer GPU (RTX&nbsp;4070&nbsp;Super). A full fit is <strong>300 steps in under two minutes</strong>. With only <strong>494 trainable parameters</strong> and about <strong>1,222 multiplies per output sample</strong>, both the forward and backward passes stay cheap, which makes it practical to fit at scale or embed inside a larger learned audio system.</p>
+    </div>
+
+    <p class="pitch">A full-size, fully differentiable FDN: every parameter trainable, fit to a measured room in ~300 gradient steps (under two minutes) on one GPU &mdash; a drop-in layer for audio-ML pipelines.</p>
+  </div>
+</section>
+
+<!-- ===================== RESULTS HIGHLIGHT ===================== -->
+<section id="results">
+  <div class="wrap">
+    <h2>Headline results</h2>
+    <p class="lead">Mean absolute error against the measured target, averaged over octave bands from 31.5&nbsp;Hz to 16&nbsp;kHz across 9 rooms (DRR is broadband). Lower is better, and the <span class="win">best</span> value in each column is highlighted. The full ablation is in the paper.</p>
+    <div class="matrix-scroll" style="border-radius:12px">
+      <table class="restable">
+        <thead>
+          <tr>
+            <th>Method</th>
+            <th>Params</th><th>Train (min)</th>
+            <th>T&#8323;&#8320; ↓</th><th>EDT ↓</th><th>C&#8328;&#8320; ↓</th>
+            <th>DRR ↓</th><th>EDR ↓</th><th>MRSTFT ↓</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="best">
+            <td class="name"><b>Proposed (all-diff)</b></td>
+            <td>494</td><td>1.6</td>
+            <td class="win">0.261</td><td>0.267</td><td class="win">2.87</td>
+            <td class="win">0.52</td><td>17.6</td><td class="win">52.6</td>
+          </tr>
+          <tr>
+            <td class="name">NoiseShaper (baseline)</td>
+            <td>48</td><td>0.2</td>
+            <td>0.311</td><td class="win">0.269</td><td>3.42</td>
+            <td>5.28</td><td class="win">7.78</td><td>80.4</td>
+          </tr>
+          <tr>
+            <td class="name">DFDN (baseline)</td>
+            <td>496</td><td>0.2</td>
+            <td>1.382</td><td>0.824</td><td>6.45</td>
+            <td>8.08</td><td>28.9</td><td>194.2</td>
+          </tr>
+          <tr>
+            <td class="name">RIR2FDN (baseline)</td>
+            <td>187</td><td>9.7</td>
+            <td>0.444</td><td>0.877</td><td>5.96</td>
+            <td>15.15</td><td>15.9</td><td>273.7</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="hint" style="margin-top:12px">The noise-shaped baseline wins on broadband EDR because it fills the tail with dense noise, but it has no real early reflections or direct sound, which you can hear in DRR and in the examples below. On everything else the proposed FDN is the strongest of the four, and it stays fully parametric.</p>
+  </div>
+</section>
+
+<!-- ===================== EXAMPLE MATRIX ===================== -->
+<section id="examples">
+  <div class="wrap">
+    <h2>Audio examples</h2>
+    <p class="lead">Pick a room and compare the columns. The reference is the measured RIR, and every other column is a fitted model. Rows are the raw impulse response and six dry sounds convolved with it. One clip plays at a time, and switching method <em>within a row</em> keeps the playback position, so you hear the same moment through each reverberator.</p>
+
+    <div class="controls">
+      <div id="roompills" class="roompills"></div>
+      <label class="toggle" title="Reveal the FDN family and attenuation-filter ablation columns">
+        <input type="checkbox" id="ablToggle" />
+        <span id="ablLabel">Show ablation variants</span>
+      </label>
+    </div>
+    <p class="hint">The highlighted column is the proposed FDN: every parameter trainable, about two minutes per room. The column tagged <b>recommended</b> keeps the delays fixed and trains the rest, which is the most reliable setting in practice.</p>
+    <p class="hint">Playback here is 320&nbsp;kbps MP3. Lossless <strong>48&nbsp;kHz WAV</strong> impulse responses &mdash; the measured targets and the kept models &mdash; are in <a href="https://github.com/ilias-audio/DAFX26_DiffReverb/tree/main/docs/ir_wav"><code class="inline">docs/ir_wav/</code></a> in the repository.</p>
+
+    <div id="matrix" class="matrix-scroll"></div>
+
+    <!-- per-room spectrum comparison (target vs proposed FDN + difference) -->
+    <div class="spectra">
+      <h3 class="spectra-title">Spectrum of the fit &mdash; <span id="spec-room" class="spec-room"></span></h3>
+      <p class="hint">Magnitude spectra (1/6-octave smoothed) of the measured target and the proposed all-diff FDN, with their difference on the right. The difference shows exactly where the model is still too loud or too quiet: the mid band matches within a couple of dB, and the residual concentrates at the spectral edges. These update with the room selected above.</p>
+      <div class="spectra-grid">
+        <figure class="figure spec-card">
+          <img id="spec-target" src="" alt="Target RIR magnitude spectrum" loading="lazy" />
+          <figcaption class="figcap"><b>Target.</b> Spectrum of the measured room impulse response.</figcaption>
+        </figure>
+        <figure class="figure spec-card">
+          <img id="spec-proposed" src="" alt="Proposed FDN magnitude spectrum" loading="lazy" />
+          <figcaption class="figcap"><b>Proposed FDN.</b> Fitted spectrum (target faint for reference).</figcaption>
+        </figure>
+        <figure class="figure spec-card">
+          <img id="spec-diff" src="" alt="Proposed minus target spectral difference" loading="lazy" />
+          <figcaption class="figcap"><b>Difference.</b> Proposed &minus; target &mdash; where the fit still needs work.</figcaption>
+        </figure>
+      </div>
+
+      <p class="hint" style="margin-top:24px">Full <b>time&ndash;frequency&ndash;energy</b> spectrograms of the same target and fit. Time runs left to right, frequency (log) bottom to top, and colour is energy in dB. The difference map on the right shows <em>where in time and frequency</em> the model has too much or too little energy: red is too loud, blue too quiet.</p>
+      <div class="spectra-grid">
+        <figure class="figure spec-card">
+          <img id="spec-target-stft" src="" alt="Target RIR spectrogram" loading="lazy" />
+          <figcaption class="figcap"><b>Target.</b> Spectrogram of the measured impulse response.</figcaption>
+        </figure>
+        <figure class="figure spec-card">
+          <img id="spec-proposed-stft" src="" alt="Proposed FDN spectrogram" loading="lazy" />
+          <figcaption class="figcap"><b>Proposed FDN.</b> Spectrogram of the fitted impulse response.</figcaption>
+        </figure>
+        <figure class="figure spec-card">
+          <img id="spec-diff-stft" src="" alt="Proposed minus target spectrogram difference" loading="lazy" />
+          <figcaption class="figcap"><b>Difference.</b> Proposed &minus; target across time and frequency.</figcaption>
+        </figure>
+      </div>
+
+      <p class="hint" style="margin-top:24px"><b>Early-time structure</b>, zoomed to the first ~150&nbsp;ms with <i>t</i>&nbsp;=&nbsp;0 at the direct sound. You can see the first impulse, the individual <b>early reflections</b> (orange &mdash; the model's ER branch) and the <b>late reverberation</b> (green &mdash; the recursive FDN branch) building up underneath, over the measured target (grey). This is where the direct sound, early reflections, and diffuse late field hand off to one another.</p>
+      <figure class="figure spec-card spec-early">
+        <img id="spec-early" src="" alt="Early-time waveform: target, early reflections, and late reverb" loading="lazy" />
+        <figcaption class="figcap"><b>Early-time structure.</b> Measured target (grey), the model's early-reflection branch (orange), and its late-reverb branch (green), each aligned at its direct sound.</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p>Companion page for the DAFx 2026 submission. Source audio: dry stems convolved with the fitted / measured impulse responses. RIRs from the <a href="https://www.openair.hosted.york.ac.uk/">OpenAIR</a> dataset. Built with the <a href="https://github.com/gdalsanto/flamo">FLAMO</a> framework.</p>
+    <p>Code, RIRs and reproduction scripts: <a href="https://github.com/ilias-audio/DAFX26_DiffReverb">github.com/ilias-audio/DAFX26_DiffReverb</a></p>
+  </div>
+</footer>
+
+<!-- now-playing bar -->
+<div class="nowbar" id="nowbar">
+  <button class="np-btn" id="np-btn" aria-label="Play/pause"></button>
+  <div class="np-meta">
+    <div class="np-title" id="np-title"></div>
+    <div class="np-sub" id="np-sub"></div>
+  </div>
+  <div class="np-seek" id="np-seek"><div class="np-fill" id="np-fill"></div></div>
+  <div class="np-time" id="np-time">0:00 / 0:00</div>
+  <button class="np-x" id="np-x" aria-label="Stop">×</button>
+</div>
+
+<script src="assets/app.js"></script>
+</body>
+</html>

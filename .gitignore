@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
+
+# Run outputs from fit.py / baselines
+output/
+*.log
+
+# Virtual environments
+venv*/
+.venv/
+env/
+
+# OS / editor
+.DS_Store

@@ -1,0 +1,23 @@
+# Python 3.11. flamo is not listed here: it is the vendored git submodule
+# (a patched fork), and model.py / fit.py put it first on sys.path.
+# Newest torch may need a newer NVIDIA driver than you have; if CUDA is not
+# picked up, install the build for your CUDA version from pytorch.org.
+torch>=2.2
+torchaudio>=2.2
+numpy>=1.24
+scipy>=1.10
+soundfile>=0.12
+matplotlib>=3.7
+tqdm>=4.65
+pyyaml>=6.0
+pandas>=2.0
+pytorch-lightning>=2.1
+
+# Needed by flamo at import time.
+nnAudio>=0.3
+pydantic>=2.0
+
+# Pinned: pyfar 0.8 changed the fractional-octave-band API and breaks the
+# metrics, and pyrato >=1.0 requires pyfar >=0.8.
+pyfar==0.7.3
+pyrato==0.4.2

@@ -1,0 +1,347 @@
+{
+  "title": "Gradient Descent Optimization of Room Impulse Responses with Parameter-Efficient Differentiable Feedback Delay Networks",
+  "rooms": [
+    {
+      "id": "01_studio_genesis6",
+      "name": "Studio (Genesis 6)",
+      "t30": 0.25
+    },
+    {
+      "id": "02_tomb_maes-howe",
+      "name": "Tomb (Maes Howe)",
+      "t30": 0.51
+    },
+    {
+      "id": "03_theatre_theatre41",
+      "name": "Theatre (Theatre 41)",
+      "t30": 0.76
+    },
+    {
+      "id": "04_lecture-hall_central-hall-york",
+      "name": "Lecture Hall (Central Hall, York)",
+      "t30": 1.13
+    },
+    {
+      "id": "05_concert-hall_jack-lyons-york",
+      "name": "Concert Hall (Jack Lyons, York)",
+      "t30": 2.07
+    },
+    {
+      "id": "06_concrete-dome_tvisongur",
+      "name": "Concrete Dome (Þvisöngur)",
+      "t30": 1.58
+    },
+    {
+      "id": "07_symphony-hall_usina-del-arte",
+      "name": "Symphony Hall (Usina del Arte)",
+      "t30": 2.03
+    },
+    {
+      "id": "08_cathedral_st-pauls",
+      "name": "Cathedral (St Paul's)",
+      "t30": 5.47
+    },
+    {
+      "id": "09_sports-hall_york",
+      "name": "Sports Hall (York)",
+      "t30": 6.13
+    }
+  ],
+  "instruments": [
+    {
+      "id": "ir",
+      "name": "Raw IR",
+      "dry": null
+    },
+    {
+      "id": "AC_GTR",
+      "name": "Acoustic Guitar",
+      "dry": "audio/_source/AC_GTR.mp3"
+    },
+    {
+      "id": "DRUMS",
+      "name": "Drums",
+      "dry": "audio/_source/DRUMS.mp3"
+    },
+    {
+      "id": "ELEC_GTR",
+      "name": "Electric Guitar",
+      "dry": "audio/_source/ELEC_GTR.mp3"
+    },
+    {
+      "id": "PIANO",
+      "name": "Piano",
+      "dry": "audio/_source/PIANO.mp3"
+    },
+    {
+      "id": "SPEECH",
+      "name": "Speech",
+      "dry": "audio/_source/SPEECH.mp3"
+    },
+    {
+      "id": "VOCAL",
+      "name": "Vocal",
+      "dry": "audio/_source/VOCAL.mp3"
+    }
+  ],
+  "groups": {
+    "reference": "Reference",
+    "proposed": "Proposed FDN",
+    "baseline": "Baselines",
+    "atten": "Attenuation ablation"
+  },
+  "methods": {
+    "headline": [
+      {
+        "id": "reference",
+        "name": "Reference",
+        "group": "reference",
+        "desc": "The measured room impulse response, the target we fit to.",
+        "recommended": false
+      },
+      {
+        "id": "FDN_DiffER_PEQ10",
+        "name": "Proposed (all-diff)",
+        "group": "proposed",
+        "desc": "The proposed model. Trainable delays, orthogonal mixing matrix, PEQ attenuation, and early-reflection taps, all optimized jointly.",
+        "recommended": false
+      },
+      {
+        "id": "FDN_FixedDelayTrainMix_ER_PEQ10",
+        "name": "FDN (fixed delay, train mix)",
+        "group": "proposed",
+        "desc": "Recommended setting. Delays fixed at co-prime integers, and the mixing matrix, filters, and early-reflection taps trained. The most robust configuration in practice.",
+        "recommended": true
+      },
+      {
+        "id": "NoiseShaper_24",
+        "name": "NoiseShaper",
+        "group": "baseline",
+        "desc": "Noise-shaped reverb baseline (filtered noise, 48 params) trained with our composite loss.",
+        "recommended": false
+      },
+      {
+        "id": "Mezza_16k",
+        "name": "DFDN",
+        "group": "baseline",
+        "desc": "Differentiable FDN baseline with trainable FIR attenuation and 6 delay lines at 16 kHz.",
+        "recommended": false
+      },
+      {
+        "id": "RIR2FDN",
+        "name": "RIR2FDN",
+        "group": "baseline",
+        "desc": "Analysis and synthesis pipeline of Dal Santo et al., a 6-line scattering FDN with two-stage attenuation.",
+        "recommended": false
+      }
+    ],
+    "ablation": [
+      {
+        "id": "FDN_DiffNoER_PEQ10",
+        "name": "FDN (all-diff, no ER)",
+        "group": "proposed",
+        "desc": "The proposed model with the early-reflection branch disabled.",
+        "recommended": false
+      },
+      {
+        "id": "FDN_FixedER_PEQ10",
+        "name": "FDN (fixed), PEQ-10",
+        "group": "proposed",
+        "desc": "Hadamard matrix and delays frozen, only the filters trained, with fixed ER taps. The anchor of both ablation axes.",
+        "recommended": false
+      },
+      {
+        "id": "FDN_FixedNoER_PEQ10",
+        "name": "FDN (fixed, no ER)",
+        "group": "proposed",
+        "desc": "Fixed FDN with the early-reflection branch disabled, the leanest variant at 95 params.",
+        "recommended": false
+      },
+      {
+        "id": "FDN_FixedER_PEQ6",
+        "name": "PEQ-6",
+        "group": "atten",
+        "desc": "Fixed FDN with ER, 6-band proportional PEQ attenuation.",
+        "recommended": false
+      },
+      {
+        "id": "FDN_FixedER_PEQ16",
+        "name": "PEQ-16",
+        "group": "atten",
+        "desc": "Fixed FDN with ER, 16-band proportional PEQ attenuation.",
+        "recommended": false
+      },
+      {
+        "id": "FDN_FixedER_GEQ10",
+        "name": "GEQ oct-10",
+        "group": "atten",
+        "desc": "Fixed FDN with ER, octave graphic-EQ attenuation (matched-parameter GEQ comparison).",
+        "recommended": false
+      },
+      {
+        "id": "FDN_FixedER_GEQ31",
+        "name": "GEQ 1/3-oct",
+        "group": "atten",
+        "desc": "Fixed FDN with ER, third-octave graphic-EQ attenuation (31 bands).",
+        "recommended": false
+      },
+      {
+        "id": "NoiseShaper_Steinmetz",
+        "name": "NoiseShaper (STFT loss)",
+        "group": "baseline",
+        "desc": "Noise-shaped baseline trained with its original multi-resolution STFT loss instead of our composite loss.",
+        "recommended": false
+      }
+    ]
+  },
+  "available": {
+    "01_studio_genesis6": [
+      "reference",
+      "FDN_DiffER_PEQ10",
+      "FDN_FixedDelayTrainMix_ER_PEQ10",
+      "NoiseShaper_24",
+      "Mezza_16k",
+      "RIR2FDN",
+      "FDN_DiffNoER_PEQ10",
+      "FDN_FixedER_PEQ10",
+      "FDN_FixedNoER_PEQ10",
+      "FDN_FixedER_PEQ6",
+      "FDN_FixedER_PEQ16",
+      "FDN_FixedER_GEQ10",
+      "FDN_FixedER_GEQ31",
+      "NoiseShaper_Steinmetz"
+    ],
+    "02_tomb_maes-howe": [
+      "reference",
+      "FDN_DiffER_PEQ10",
+      "FDN_FixedDelayTrainMix_ER_PEQ10",
+      "NoiseShaper_24",
+      "Mezza_16k",
+      "RIR2FDN",
+      "FDN_DiffNoER_PEQ10",
+      "FDN_FixedER_PEQ10",
+      "FDN_FixedNoER_PEQ10",
+      "FDN_FixedER_PEQ6",
+      "FDN_FixedER_PEQ16",
+      "FDN_FixedER_GEQ10",
+      "FDN_FixedER_GEQ31",
+      "NoiseShaper_Steinmetz"
+    ],
+    "03_theatre_theatre41": [
+      "reference",
+      "FDN_DiffER_PEQ10",
+      "FDN_FixedDelayTrainMix_ER_PEQ10",
+      "NoiseShaper_24",
+      "Mezza_16k",
+      "RIR2FDN",
+      "FDN_DiffNoER_PEQ10",
+      "FDN_FixedER_PEQ10",
+      "FDN_FixedNoER_PEQ10",
+      "FDN_FixedER_PEQ6",
+      "FDN_FixedER_PEQ16",
+      "FDN_FixedER_GEQ10",
+      "FDN_FixedER_GEQ31",
+      "NoiseShaper_Steinmetz"
+    ],
+    "04_lecture-hall_central-hall-york": [
+      "reference",
+      "FDN_DiffER_PEQ10",
+      "FDN_FixedDelayTrainMix_ER_PEQ10",
+      "NoiseShaper_24",
+      "Mezza_16k",
+      "RIR2FDN",
+      "FDN_DiffNoER_PEQ10",
+      "FDN_FixedER_PEQ10",
+      "FDN_FixedNoER_PEQ10",
+      "FDN_FixedER_PEQ6",
+      "FDN_FixedER_PEQ16",
+      "FDN_FixedER_GEQ10",
+      "FDN_FixedER_GEQ31",
+      "NoiseShaper_Steinmetz"
+    ],
+    "05_concert-hall_jack-lyons-york": [
+      "reference",
+      "FDN_DiffER_PEQ10",
+      "FDN_FixedDelayTrainMix_ER_PEQ10",
+      "NoiseShaper_24",
+      "Mezza_16k",
+      "RIR2FDN",
+      "FDN_DiffNoER_PEQ10",
+      "FDN_FixedER_PEQ10",
+      "FDN_FixedNoER_PEQ10",
+      "FDN_FixedER_PEQ6",
+      "FDN_FixedER_PEQ16",
+      "FDN_FixedER_GEQ10",
+      "FDN_FixedER_GEQ31",
+      "NoiseShaper_Steinmetz"
+    ],
+    "06_concrete-dome_tvisongur": [
+      "reference",
+      "FDN_DiffER_PEQ10",
+      "FDN_FixedDelayTrainMix_ER_PEQ10",
+      "NoiseShaper_24",
+      "Mezza_16k",
+      "RIR2FDN",
+      "FDN_DiffNoER_PEQ10",
+      "FDN_FixedER_PEQ10",
+      "FDN_FixedNoER_PEQ10",
+      "FDN_FixedER_PEQ6",
+      "FDN_FixedER_PEQ16",
+      "FDN_FixedER_GEQ10",
+      "FDN_FixedER_GEQ31",
+      "NoiseShaper_Steinmetz"
+    ],
+    "07_symphony-hall_usina-del-arte": [
+      "reference",
+      "FDN_DiffER_PEQ10",
+      "FDN_FixedDelayTrainMix_ER_PEQ10",
+      "NoiseShaper_24",
+      "Mezza_16k",
+      "RIR2FDN",
+      "FDN_DiffNoER_PEQ10",
+      "FDN_FixedER_PEQ10",
+      "FDN_FixedNoER_PEQ10",
+      "FDN_FixedER_PEQ6",
+      "FDN_FixedER_PEQ16",
+      "FDN_FixedER_GEQ10",
+      "FDN_FixedER_GEQ31",
+      "NoiseShaper_Steinmetz"
+    ],
+    "08_cathedral_st-pauls": [
+      "reference",
+      "FDN_DiffER_PEQ10",
+      "FDN_FixedDelayTrainMix_ER_PEQ10",
+      "NoiseShaper_24",
+      "Mezza_16k",
+      "RIR2FDN",
+      "FDN_DiffNoER_PEQ10",
+      "FDN_FixedER_PEQ10",
+      "FDN_FixedNoER_PEQ10",
+      "FDN_FixedER_PEQ6",
+      "FDN_FixedER_PEQ16",
+      "FDN_FixedER_GEQ10",
+      "FDN_FixedER_GEQ31"
+    ],
+    "09_sports-hall_york": [
+      "reference",
+      "FDN_DiffER_PEQ10",
+      "FDN_FixedDelayTrainMix_ER_PEQ10",
+      "NoiseShaper_24",
+      "Mezza_16k",
+      "RIR2FDN",
+      "FDN_DiffNoER_PEQ10",
+      "FDN_FixedER_PEQ10",
+      "FDN_FixedNoER_PEQ10",
+      "FDN_FixedER_PEQ6",
+      "FDN_FixedER_PEQ16",
+      "FDN_FixedER_GEQ10",
+      "FDN_FixedER_GEQ31"
+    ]
+  },
+  "proposed": "FDN_DiffER_PEQ10",
+  "paths": {
+    "audio": "audio",
+    "wav": "ir_wav",
+    "spectra": "spectra"
+  }
+}
